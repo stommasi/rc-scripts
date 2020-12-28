@@ -1,0 +1,29 @@
+#!/bin/rc
+
+# rlc - recursive line count
+#
+# Count the lines in all files from the current directory down.
+# Optionally filter by file extensions added as arguments.
+#
+# E.g. 'rlc c h' will count the lines in C source and header files.
+
+switch($#*){
+case 0
+	pattern = ''
+case *
+	pattern = $1
+	shift
+
+	for (arg)
+		pattern = $pattern'|'$arg
+
+	pattern = '\.('$pattern')'
+}
+
+du -a |
+awk '/.*'$pattern'$/ { print $2 }' |
+xargs wc -l |
+awk '
+	{ if($2 == "total") t += $1 }
+	END { print t }
+'
